@@ -1,0 +1,43 @@
+WeetBot v2 task list:
+	IRC:
+		☐ TCP dial into irc.chat.twitch.tv:6667
+		☐ Read lines from the tcp connection and return the result to be processed
+		☐ Create a Send function to send messages to the connection easier
+		☐ Send CAP REQs for membership (Not really needed), tags, and commands
+		☐ Parse messages based on different tags [PRIVMSG, CLEARCHAT, ROOMSTATE, USERNOTICE (New Sub)]
+		MariaDB Logs:
+			☐ Store all messages in MariaDB (MySQL) for logs
+		...
+	PubSub:
+		☐ Use github.com/gorilla/websocket to connect to wss://pubsub-edge.twitch.tv/
+		☐ Send PING to the connection at least every 5 minutes to keep the connection alive
+		☐ Create an event handler based on Topics for modular use
+		☐ Create a Send function to send messages to the connection easier
+		☐ Listen to a topic within 15 seconds of connecting to prevent inactive disconnect from Twitch
+		☐ Watch for RECONNECT message to know when to reconnect (typically sent for ws maintenance)
+		MariaDB Logs:
+			☐ Store moderator actions (chat_moderator_actions.<Bot ID>.<Channel ID>) in MariaDB (MySQL) for logs
+			☐ Listen for new followers (following.<Channel ID>) and store them in MariaDB (MySQL)
+			☐ Listen for video playback (video-playback-by-id.<Channel ID>) updates to store live stream stats in MariaDB (MySQL)
+		...
+	API:
+		Endpoints:
+			☐ *GET* / - Return live stats about the bot
+			Channels:
+				☐ *GET* /channels - Returns the channels the bot is currently in
+				☐ *GET* /channels/id/{username} - Returns the channels id
+				☐ *GET* /channels/{id} - Returns basic channel information
+				☐ *GET* /channels/{id}/chatters - Returns data from tmi's chatter endpoint / Redis cache
+				☐ *GET* /channels/{id}/stats - Returns collected stats
+				Commands:
+					☐ *GET* /channels/{id}/commands - Returns channels commands
+					☐ **POST** /channels/{id}/commands/ - Creates a new command
+					☐ *GET* /channels/{id}/commands/{command} - Returns a specific commands data
+					☐ **PUT** /channels/{id}/commands/{command} - Edits a new command
+					☐ **DELETE** /channels/{id}/commands/{command} - Deletes a command
+				Leaderboard:
+					☐ *GET* /channels/{id}/leaderboard - Returns the all time chatters ordered by points or messages sent
+					☐ **DELETE** /channels/{id}/leaderboard - Resets the channels leaderboard
+					☐ *GET* /channels/{id}/leaderboard/{user} - Returns the users leaderboard information
+					☐ **DELETE** /channels/{id}/leaderboard/{user} - Resets a users leaderboard information
+			...
