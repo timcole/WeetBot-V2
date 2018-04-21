@@ -23,6 +23,8 @@ WeetBot v2 task list:
 	API:
 		Endpoints:
 			☐ *GET* / - Return live stats about the bot
+			☐ *GET* /auth - Is used to login with Twitch
+			☐ **GET** /me - Returns data about the authenticated user
 			Channels:
 				☐ *GET* /channels - Returns the channels the bot is currently in
 				☐ *GET* /channels/id/{username} - Returns the channels id
