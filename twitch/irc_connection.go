@@ -12,7 +12,7 @@ type Conn struct {
 	rd   *bufio.Reader
 }
 
-func Connect() (*Conn, error) {
+func IRCConnect() (*Conn, error) {
 	conn, err := net.Dial("tcp", "irc.chat.twitch.tv:6667")
 	if err != nil {
 		return nil, err

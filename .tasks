@@ -9,12 +9,13 @@ WeetBot v2 task list:
 			☐ Store all messages in MariaDB (MySQL) for logs
 		...
 	PubSub:
-		☐ Use github.com/gorilla/websocket to connect to wss://pubsub-edge.twitch.tv/
-		☐ Send PING to the connection at least every 5 minutes to keep the connection alive
-		☐ Create an event handler based on Topics for modular use
-		☐ Create a Send function to send messages to the connection easier
-		☐ Listen to a topic within 15 seconds of connecting to prevent inactive disconnect from Twitch
+		✔ Use github.com/gorilla/websocket to connect to wss://pubsub-edge.twitch.tv/ @done (4/22/2018, 11:06:04 PM)
+		✔ Send PING to the connection at least every 5 minutes to keep the connection alive @done (4/22/2018, 11:42:09 PM)
+		✔ Create an event handler based on Topics for modular use @done (4/22/2018, 11:29:43 PM)
+		✔ Create a Send function to send messages to the connection easier @done (4/22/2018, 11:38:16 PM)
+		✔ Listen to a topic within 15 seconds of connecting to prevent inactive disconnect from Twitch @done (4/22/2018, 11:06:13 PM)
 		☐ Watch for RECONNECT message to know when to reconnect (typically sent for ws maintenance)
+		✔ Parse JSON from PubSub Messages @done (4/23/2018, 12:02:24 AM)
 		MariaDB Logs:
 			☐ Store moderator actions (chat_moderator_actions.<Bot ID>.<Channel ID>) in MariaDB (MySQL) for logs
 			☐ Listen for new followers (following.<Channel ID>) and store them in MariaDB (MySQL)
