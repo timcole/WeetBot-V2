@@ -1,10 +1,10 @@
 WeetBot v2 task list:
 	IRC:
-		☐ TCP dial into irc.chat.twitch.tv:6667
-		☐ Read lines from the tcp connection and return the result to be processed
-		☐ Create a Send function to send messages to the connection easier
-		☐ Send CAP REQs for membership (Not really needed), tags, and commands
-		☐ Parse messages based on different tags [PRIVMSG, CLEARCHAT, ROOMSTATE, USERNOTICE (New Sub)]
+		✔ TCP dial into irc.chat.twitch.tv:6667 @done (4/22/2018, 8:30:17 PM)
+		✔ Read lines from the tcp connection and return the result to be processed @done (4/22/2018, 8:30:19 PM)
+		✔ Create a Send function to send messages to the connection easier @done (4/22/2018, 8:30:21 PM)
+		✔ Send CAP REQs for membership (Not really needed), tags, and commands @done (4/22/2018, 8:40:17 PM)
+		✔ Parse messages based on different tags [PRIVMSG, CLEARCHAT, ROOMSTATE, USERNOTICE (New Sub)] @done (4/22/2018, 10:31:16 PM)
 		MariaDB Logs:
 			☐ Store all messages in MariaDB (MySQL) for logs
 		...
