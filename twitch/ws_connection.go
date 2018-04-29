@@ -35,6 +35,7 @@ func WSConnect() (*Connections, error) {
 type PubSubResponse struct {
 	Type  string `json:"type"`
 	Nonce string `json:"nonce,omitempty"`
+	Error string `json:"error,omitempty"`
 	Data  struct {
 		Topics     []string `json:"topics,omitempty"`
 		Topic      string   `json:"topic,omitempty"`
