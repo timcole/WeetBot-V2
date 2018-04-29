@@ -7,24 +7,21 @@ import (
 	"strings"
 )
 
-type Conn struct {
-	conn net.Conn
-	rd   *bufio.Reader
-}
-
-func IRCConnect() (*Conn, error) {
+func (bot *Connections) IRCConnect() (*Connections, error) {
 	conn, err := net.Dial("tcp", "irc.chat.twitch.tv:6667")
 	if err != nil {
 		return nil, err
 	}
-	c := &Conn{
+
+	bot.IRC = &IRCConnection{
 		conn: conn,
 		rd:   bufio.NewReader(conn),
 	}
-	return c, nil
+
+	return bot, nil
 }
 
-func (c *Conn) Send(format string, args ...interface{}) error {
+func (c *IRCConnection) Send(format string, args ...interface{}) error {
 	if _, err := fmt.Fprintf(c.conn, format, args...); err != nil {
 		return err
 	}
@@ -36,7 +33,7 @@ func (c *Conn) Send(format string, args ...interface{}) error {
 	return nil
 }
 
-func (c *Conn) ReadMessage() (*Message, error) {
+func (c *IRCConnection) ReadMessage() (*Message, error) {
 	line, err := c.rd.ReadString('\n')
 	if err != nil {
 		return nil, err
@@ -44,6 +41,6 @@ func (c *Conn) ReadMessage() (*Message, error) {
 	return ParseLine(line)
 }
 
-func (c *Conn) Close() error {
+func (c *IRCConnection) Close() error {
 	return c.conn.Close()
 }

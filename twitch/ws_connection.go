@@ -9,27 +9,29 @@ import (
 	ws "github.com/gorilla/websocket"
 )
 
-func WSConnect() (*Connections, error) {
+func (bot *Connections) WSConnect() (*Connections, error) {
 	c, _, err := ws.DefaultDialer.Dial("wss://pubsub-edge.twitch.tv/", nil)
 	if err != nil {
 		return nil, err
 	}
 
-	connection := &Connections{
-		WSConnection: c,
-	}
+	// connection := &Connections{
+	// 	WSConnection: c,
+	// }
 
-	go wsListen(connection)
+	bot.WS = &WSConnection{c}
+
+	go wsListen(bot.WS)
 
 	// Send pings every 2.5 minutes to keep the connection alive (5 minutes is the required time but 2.5 just to be safe)
-	go func(c *Connections) {
+	go func(c *WSConnection) {
 		ticker := time.NewTicker(150 * time.Second)
 		for _ = range ticker.C {
 			c.Send(`{ "type": "PING" }`)
 		}
-	}(connection)
+	}(bot.WS)
 
-	return connection, nil
+	return bot, nil
 }
 
 type PubSubResponse struct {
@@ -57,13 +59,13 @@ type PubSubMessage struct {
 
 var EventHandlers = make(map[string]interface{})
 
-func wsListen(c *Connections) {
+func wsListen(c *WSConnection) {
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
 		for {
 			m := PubSubResponse{}
-			err := c.WSConnection.ReadJSON(&m)
+			err := c.conn.ReadJSON(&m)
 			if err != nil {
 				log.Println("JSON Read Error: ", err)
 				return
@@ -80,7 +82,7 @@ func wsListen(c *Connections) {
 
 			type HandlerType func(m PubSubResponse)
 			if f, ok := EventHandlers[m.Data.Topic].(func(PubSubResponse)); ok {
-				HandlerType(f)(m)
+				go HandlerType(f)(m)
 			} else {
 				if m.Data.Topic != "" {
 					fmt.Printf("not running func topic=%s interface=%v\n", m.Data.Topic, EventHandlers[m.Data.Topic])
@@ -92,12 +94,12 @@ func wsListen(c *Connections) {
 	}()
 }
 
-func (c *Connections) AddHandler(topic string, q interface{}) {
+func (c *WSConnection) AddHandler(topic string, q interface{}) {
 	if EventHandlers[topic] == nil {
 		EventHandlers[topic] = q
 	}
 }
 
-func (c *Connections) Send(msg string) {
-	c.WSConnection.WriteMessage(ws.TextMessage, []byte(msg))
+func (c *WSConnection) Send(msg string) {
+	c.conn.WriteMessage(ws.TextMessage, []byte(msg))
 }

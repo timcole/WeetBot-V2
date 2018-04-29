@@ -5,7 +5,8 @@ WeetBot v2 task list:
 		✔ Create a Send function to send messages to the connection easier @done (4/22/2018, 8:30:21 PM)
 		✔ Send CAP REQs for membership (Not really needed), tags, and commands @done (4/22/2018, 8:40:17 PM)
 		✔ Parse messages based on different tags [PRIVMSG, CLEARCHAT, ROOMSTATE, USERNOTICE (New Sub)] @done (4/22/2018, 10:31:16 PM)
-		☐ Respond to PINGs so we don't get disconnected
+		✔ Respond to PINGs so we don't get disconnected @done (4/29/2018, 7:41:22 AM)
+		✔ Merge Connection into a global struct with PubSub @done (4/29/2018, 8:38:35 AM)
 		MariaDB Logs:
 			☐ Store all messages in MariaDB (MySQL) for logs
 		...
