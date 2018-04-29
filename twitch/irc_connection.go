@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func (bot *Connections) IRCConnect() (*Connections, error) {
+func (bot *Bot) IRCConnect() (*Bot, error) {
 	conn, err := net.Dial("tcp", "irc.chat.twitch.tv:6667")
 	if err != nil {
 		return nil, err
@@ -17,6 +17,11 @@ func (bot *Connections) IRCConnect() (*Connections, error) {
 		conn: conn,
 		rd:   bufio.NewReader(conn),
 	}
+
+	bot.IRC.Send("USER " + bot.Name)
+	bot.IRC.Send("PASS oauth:" + strings.Replace(bot.OAuth, "oauth:", "", 0))
+	bot.IRC.Send("NICK " + bot.Name)
+	bot.IRC.Send("CAP REQ :twitch.tv/commands twitch.tv/tags")
 
 	return bot, nil
 }

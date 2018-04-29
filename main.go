@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"sync"
@@ -10,10 +9,19 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-func main() {
-	wg := new(sync.WaitGroup)
+var (
+	wg       = new(sync.WaitGroup)
+	autoJoin = []string{
+		"weetbot",
+		"modesttim",
+	}
+)
 
-	bot := new(twitch.Connections)
+func main() {
+	bot := &twitch.Bot{
+		Name:  os.Getenv("TWITCH_BOT_NAME"),
+		OAuth: os.Getenv("TWITCH_BOT_AUTH"),
+	}
 	bot, err := bot.IRCConnect()
 	if err != nil {
 		log.Fatalf("NO IRC CONNECTION WutFace %s", err)
@@ -22,17 +30,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("NO WS CONNECTION WutFace %s", err)
 	}
+	go bot.IRC.Listen(wg)
+	go bot.WS.Listen(wg)
 
-	// IRC
-	bot.IRC.Send("USER " + os.Getenv("TWITCH_BOT_NAME"))
-	bot.IRC.Send("PASS oauth:" + os.Getenv("TWITCH_BOT_AUTH"))
-	bot.IRC.Send("NICK " + os.Getenv("TWITCH_BOT_NAME"))
-	bot.IRC.Send("CAP REQ :twitch.tv/commands twitch.tv/tags")
-
-	bot.IRC.Send("JOIN #modesttim")
-
-	wg.Add(1)
-	go monitor(bot.IRC)
+	go func(irc *twitch.IRCConnection) {
+		for _, name := range autoJoin {
+			go irc.Send("JOIN #" + name)
+		}
+	}(bot.IRC)
 
 	// WS
 	bot.WS.Send(`{ "type": "LISTEN", "data": { "topics": ["video-playback-by-id.51684790"] } }`)
@@ -46,22 +51,5 @@ func main() {
 		// fmt.Println("New Followers!", f.DisplayName)
 	})
 
-	wg.Add(1)
-
 	wg.Wait()
-}
-
-func monitor(c *twitch.IRCConnection) {
-	for {
-		m, err := c.ReadMessage()
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		if m.Command == "PING" {
-			c.Send("PONG %s", m.Trailing)
-		}
-
-		fmt.Println(m.Command)
-	}
 }

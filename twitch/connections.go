@@ -16,7 +16,10 @@ type WSConnection struct {
 	conn *websocket.Conn
 }
 
-type Connections struct {
+type Bot struct {
+	Name  string
+	OAuth string
+
 	WS  *WSConnection
 	IRC *IRCConnection
 }

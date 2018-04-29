@@ -4,24 +4,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	ws "github.com/gorilla/websocket"
 )
 
-func (bot *Connections) WSConnect() (*Connections, error) {
+func (bot *Bot) WSConnect() (*Bot, error) {
 	c, _, err := ws.DefaultDialer.Dial("wss://pubsub-edge.twitch.tv/", nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// connection := &Connections{
+	// connection := &Bot{
 	// 	WSConnection: c,
 	// }
 
 	bot.WS = &WSConnection{c}
-
-	go wsListen(bot.WS)
 
 	// Send pings every 2.5 minutes to keep the connection alive (5 minutes is the required time but 2.5 just to be safe)
 	go func(c *WSConnection) {
@@ -59,39 +58,37 @@ type PubSubMessage struct {
 
 var EventHandlers = make(map[string]interface{})
 
-func wsListen(c *WSConnection) {
-	done := make(chan struct{})
-	go func() {
-		defer close(done)
-		for {
-			m := PubSubResponse{}
-			err := c.conn.ReadJSON(&m)
+func (c *WSConnection) Listen(wg *sync.WaitGroup) {
+	wg.Add(1) // This is a Goroutines
+	defer wg.Done()
+	for {
+		m := PubSubResponse{}
+		err := c.conn.ReadJSON(&m)
+		if err != nil {
+			log.Println("JSON Read Error: ", err)
+			return
+		}
+
+		if m.Data.RawMessage != "" {
+			msg := &PubSubMessage{}
+			err = json.Unmarshal([]byte(m.Data.RawMessage), msg)
 			if err != nil {
-				log.Println("JSON Read Error: ", err)
-				return
+				fmt.Println("NOOOO: ", err)
 			}
+			m.Data.Message = msg
+		}
 
-			if m.Data.RawMessage != "" {
-				msg := &PubSubMessage{}
-				err = json.Unmarshal([]byte(m.Data.RawMessage), msg)
-				if err != nil {
-					fmt.Println("NOOOO: ", err)
-				}
-				m.Data.Message = msg
-			}
-
-			type HandlerType func(m PubSubResponse)
-			if f, ok := EventHandlers[m.Data.Topic].(func(PubSubResponse)); ok {
-				go HandlerType(f)(m)
+		type HandlerType func(m PubSubResponse)
+		if f, ok := EventHandlers[m.Data.Topic].(func(PubSubResponse)); ok {
+			go HandlerType(f)(m)
+		} else {
+			if m.Data.Topic != "" {
+				fmt.Printf("not running func topic=%s interface=%v\n", m.Data.Topic, EventHandlers[m.Data.Topic])
 			} else {
-				if m.Data.Topic != "" {
-					fmt.Printf("not running func topic=%s interface=%v\n", m.Data.Topic, EventHandlers[m.Data.Topic])
-				} else {
-					fmt.Println(m)
-				}
+				fmt.Println(m)
 			}
 		}
-	}()
+	}
 }
 
 func (c *WSConnection) AddHandler(topic string, q interface{}) {
