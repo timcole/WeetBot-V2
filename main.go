@@ -5,6 +5,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/TimothyCole/WeetBot-v2/helper"
 	"github.com/TimothyCole/WeetBot-v2/twitch"
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -18,11 +19,19 @@ var (
 )
 
 func main() {
+	db, err := helper.InitDB()
+	defer db.Close()
+	if err != nil {
+		panic(err.Error())
+	}
+	db.SetMaxIdleConns(100)
+	db.SetMaxOpenConns(100)
+
 	bot := &twitch.Bot{
 		Name:  os.Getenv("TWITCH_BOT_NAME"),
 		OAuth: os.Getenv("TWITCH_BOT_AUTH"),
 	}
-	bot, err := bot.IRCConnect()
+	bot, err = bot.IRCConnect()
 	if err != nil {
 		log.Fatalf("NO IRC CONNECTION WutFace %s", err)
 	}
