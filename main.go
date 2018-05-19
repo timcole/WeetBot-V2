@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/TimothyCole/WeetBot-v2/twitch"
+	"github.com/TimothyCole/WeetBot-V2/twitch"
 	_ "github.com/joho/godotenv/autoload"
 )
 
