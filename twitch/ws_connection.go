@@ -4,35 +4,31 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"sync"
 	"time"
 
 	ws "github.com/gorilla/websocket"
 )
 
-func (bot *Bot) WSConnect() (*Bot, error) {
+func (bot *Bot) wsConnect() error {
 	c, _, err := ws.DefaultDialer.Dial("wss://pubsub-edge.twitch.tv/", nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	// connection := &Bot{
-	// 	WSConnection: c,
-	// }
-
-	bot.WS = &WSConnection{c}
-
 	// Send pings every 2.5 minutes to keep the connection alive (5 minutes is the required time but 2.5 just to be safe)
-	go func(c *WSConnection) {
-		ticker := time.NewTicker(150 * time.Second)
+	go func(bot *Bot) {
+		var ticker = time.NewTicker(150 * time.Second)
 		for _ = range ticker.C {
-			c.Send(`{ "type": "PING" }`)
+			bot.wsSend(`{ "type": "PING" }`)
 		}
-	}(bot.WS)
+	}(bot)
 
-	return bot, nil
+	bot.ws = c
+
+	return nil
 }
 
+// PubSubResponse is the response from PubSub
 type PubSubResponse struct {
 	Type  string `json:"type"`
 	Nonce string `json:"nonce,omitempty"`
@@ -46,6 +42,7 @@ type PubSubResponse struct {
 	}
 }
 
+// PubSubMessage is a message part of the PubSubResponse
 type PubSubMessage struct {
 	DisplayName string `json:"display_name,omitempty"`
 	Username    string `json:"username,omitempty"`
@@ -56,14 +53,12 @@ type PubSubMessage struct {
 	Viewers    int     `json:"viewers,omitempty"`
 }
 
-var EventHandlers = make(map[string]interface{})
+var eventHandlers = make(map[string]interface{})
 
-func (c *WSConnection) Listen(wg *sync.WaitGroup) {
-	wg.Add(1) // This is a Goroutines
-	defer wg.Done()
+func (bot *Bot) subscribe() {
 	for {
 		m := PubSubResponse{}
-		err := c.conn.ReadJSON(&m)
+		err := bot.ws.ReadJSON(&m)
 		if err != nil {
 			log.Println("JSON Read Error: ", err)
 			return
@@ -78,12 +73,12 @@ func (c *WSConnection) Listen(wg *sync.WaitGroup) {
 			m.Data.Message = msg
 		}
 
-		type HandlerType func(m PubSubResponse)
-		if f, ok := EventHandlers[m.Data.Topic].(func(PubSubResponse)); ok {
-			go HandlerType(f)(m)
+		type handlerType func(m PubSubResponse)
+		if f, ok := eventHandlers[m.Data.Topic].(func(PubSubResponse)); ok {
+			go handlerType(f)(m)
 		} else {
 			if m.Data.Topic != "" {
-				fmt.Printf("not running func topic=%s interface=%v\n", m.Data.Topic, EventHandlers[m.Data.Topic])
+				fmt.Printf("not running func topic=%s interface=%v\n", m.Data.Topic, eventHandlers[m.Data.Topic])
 			} else {
 				fmt.Println(m)
 			}
@@ -91,12 +86,13 @@ func (c *WSConnection) Listen(wg *sync.WaitGroup) {
 	}
 }
 
-func (c *WSConnection) AddHandler(topic string, q interface{}) {
-	if EventHandlers[topic] == nil {
-		EventHandlers[topic] = q
+// AddTopicHandler adds a function handle for PubSub topics
+func (*Bot) AddTopicHandler(topic string, q interface{}) {
+	if eventHandlers[topic] == nil {
+		eventHandlers[topic] = q
 	}
 }
 
-func (c *WSConnection) Send(msg string) {
-	c.conn.WriteMessage(ws.TextMessage, []byte(msg))
+func (bot *Bot) wsSend(msg string) {
+	bot.ws.WriteMessage(ws.TextMessage, []byte(msg))
 }

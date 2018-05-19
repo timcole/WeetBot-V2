@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// Message is the IRC message struct
 type Message struct {
 	Raw      string
 	Prefix   string
@@ -27,10 +28,11 @@ type Message struct {
 		}
 		Timestamp int64
 		Message   string
+		Arguments []string
 	}
 }
 
-func ParseLine(raw string) (*Message, error) {
+func parseLine(raw string) (*Message, error) {
 	raw = strings.TrimSpace(raw)
 	m := &Message{Raw: raw}
 
@@ -98,6 +100,7 @@ func ParseLine(raw string) (*Message, error) {
 		if len(chunks) == 2 {
 			raw = chunks[1]
 			m.Data.Message = chunks[1]
+			m.Data.Arguments = strings.Split(chunks[1], " ")
 		} else {
 			raw = ""
 		}
@@ -113,13 +116,15 @@ func ParseLine(raw string) (*Message, error) {
 	return m, nil
 }
 
+// String is the raw message from the IRC message
 func (m *Message) String() string {
 	return m.Raw
 }
 
+// Nick returns the Nick of the sender
 func (m *Message) Nick() string {
 	if m.Prefix == "" {
-		return "asd"
+		return ""
 	}
 	return strings.SplitN(m.Prefix, "!", 2)[0]
 }

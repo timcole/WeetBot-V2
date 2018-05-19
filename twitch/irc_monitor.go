@@ -1,34 +1,61 @@
 package twitch
 
 import (
+	"encoding/json"
 	"fmt"
-	"os"
-	"sync"
+	"reflect"
+	"strings"
 )
 
-func (c *IRCConnection) Listen(wg *sync.WaitGroup) {
-	wg.Add(1)
-	defer wg.Done()
+func (bot *Bot) monitor() {
 	for {
-		m, err := c.ReadMessage()
+		m, err := bot.readMessage()
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 
-		if m.Nick() == os.Getenv("TWITCH_BOT_NAME") {
+		var verbose = true
+		if verbose == true {
+			fmt.Println(m.String())
+		}
+
+		if m.Nick() == bot.name {
 			continue // Ignore us
 		}
 
 		if m.Command == "PING" {
-			c.Send("PONG %s", m.Trailing)
+			bot.SendRawIRC("PONG %s", m.Trailing)
 		}
 
-		if m.Data.Message == "modestYO" {
-			c.Send("PRIVMSG #" + m.Data.StreamerName + " :modestYO")
+		if len(m.Data.Arguments) <= 0 {
+			continue
 		}
 
-		// fmt.Println(m.Data.DisplayName, m.Data.Message)
-		fmt.Println(m.Data)
+		if m.Data.Arguments[0] == "!debug" {
+			var dbug []byte
+			var f reflect.Value
+			if len(m.Data.Arguments) > 1 {
+				r := reflect.ValueOf(m.Data)
+				f = reflect.Indirect(r)
+				for i := 1; i < len(m.Data.Arguments); i++ {
+					f = f.FieldByName(m.Data.Arguments[i])
+				}
+
+				if f.IsValid() {
+					dbug, _ = json.Marshal(f.Interface())
+				} else {
+					dbug = []byte("Invalid debug")
+				}
+			} else {
+				dbug, _ = json.Marshal(m.Data)
+			}
+			bot.Say(m.Data.StreamerName, string(dbug))
+		}
+
+		if m.Data.Arguments[0] == "!kill" && strings.ToLower(m.Data.DisplayName) == "modesttim" {
+			bot.Say(m.Data.StreamerName, "BibleThump")
+			bot.Done <- true
+		}
 	}
 }
