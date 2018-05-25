@@ -13,13 +13,8 @@ func (bot *Bot) ircConnect() error {
 		return err
 	}
 
-	bot.irc = struct {
-		conn net.Conn
-		rd   *bufio.Reader
-	}{
-		conn: conn,
-		rd:   bufio.NewReader(conn),
-	}
+	bot.irc.conn = conn
+	bot.irc.rd = bufio.NewReader(conn)
 
 	return nil
 }

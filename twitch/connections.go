@@ -14,19 +14,27 @@ type Bot struct {
 	oauth string
 	Done  chan bool
 
-	ws  *websocket.Conn
-	irc struct {
-		conn net.Conn
-		rd   *bufio.Reader
+	verbose bool
+	ws      *websocket.Conn
+	irc     struct {
+		conn   net.Conn
+		rd     *bufio.Reader
+		events struct {
+			onNewMessage interface{}
+			onNewWhisper interface{}
+			onNewSub     interface{}
+			onNewRaid    interface{}
+		}
 	}
 }
 
 // NewClient Initalizes the Bot struct with needed data
 func NewClient(name, oauth string) *Bot {
 	return &Bot{
-		name:  name,
-		oauth: oauth,
-		Done:  make(chan bool),
+		name:    name,
+		oauth:   oauth,
+		Done:    make(chan bool),
+		verbose: true,
 	}
 }
 

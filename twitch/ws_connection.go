@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	ws "github.com/gorilla/websocket"
@@ -95,4 +96,18 @@ func (*Bot) AddTopicHandler(topic string, q interface{}) {
 
 func (bot *Bot) wsSend(msg string) {
 	bot.ws.WriteMessage(ws.TextMessage, []byte(msg))
+}
+
+// Listen to a new pubsub topic(s)
+func (bot *Bot) Listen(topics ...string) {
+	sTopics := strings.Join(topics, `", "`)
+	json := `{"type": "LISTEN","data": {"topics": ["` + sTopics + `"]}}`
+	bot.wsSend(json)
+}
+
+// UnListen to a pubsub topic(s)
+func (bot *Bot) UnListen(topics ...string) {
+	sTopics := strings.Join(topics, `", "`)
+	json := `{"type": "UNLISTEN","data": {"topics": ["` + sTopics + `"]}}`
+	bot.wsSend(json)
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -24,10 +25,28 @@ func main() {
 		panic(err)
 	}
 
-	bot.Join("jamie254")
-	bot.Join("weetbot")
+	bot.Join("modesttim")
 
-	fmt.Println("Running :D")
+	testTopic := "video-playback-by-id.51684790"
+	bot.Listen(testTopic)
+	bot.AddTopicHandler(testTopic, func(msg twitch.PubSubResponse) {
+		// fmt.Println(msg)
+	})
+	bot.OnNewMessage(func(msg *twitch.Message) {
+		fmt.Println("> New Message: ", msg.Data.DisplayName, msg.Data.Message)
+	})
+	bot.OnNewWhisper(func(msg *twitch.Message) {
+		fmt.Println("> New Whisper: ", msg.Data.DisplayName, msg.Data.Message)
+	})
+	bot.OnNewSub(func(msg *twitch.Message) {
+		fmt.Println("> New Sub: ", msg.Data.DisplayName, msg.Data.Sub.Plan, msg.Data.GiftSub.Login)
+
+		dbug, _ := json.Marshal(msg)
+		bot.Say(msg.Data.StreamerName, string(dbug))
+	})
+	bot.OnNewRaid(func(msg *twitch.Message) {
+		fmt.Println("> New Raid: ", msg.Data.Raid.DisplayName, msg.Data.Raid.Viewers)
+	})
 
 	<-bot.Done
 }

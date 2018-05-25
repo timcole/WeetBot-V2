@@ -15,11 +15,6 @@ func (bot *Bot) monitor() {
 			return
 		}
 
-		var verbose = true
-		if verbose == true {
-			fmt.Println(m.String())
-		}
-
 		if m.Nick() == bot.name {
 			continue // Ignore us
 		}
@@ -57,5 +52,65 @@ func (bot *Bot) monitor() {
 			bot.Say(m.Data.StreamerName, "BibleThump")
 			bot.Done <- true
 		}
+
+		bot.callEvent(m)
 	}
+}
+
+func (bot *Bot) callEvent(m *Message) {
+	var event interface{}
+	switch m.Command {
+	case "PRIVMSG":
+		event = bot.irc.events.onNewMessage
+		break
+	case "WHISPER":
+		event = bot.irc.events.onNewWhisper
+		break
+	case "USERNOTICE":
+		switch m.Data.NoticeType {
+		case "sub":
+		case "resub":
+		case "subgift":
+			event = bot.irc.events.onNewSub
+			dbug, _ := json.Marshal(m)
+			fmt.Println(string(dbug))
+			break
+		case "raid":
+			event = bot.irc.events.onNewRaid
+			dbug, _ := json.Marshal(m)
+			fmt.Println(string(dbug))
+			break
+		default:
+			dbug, _ := json.Marshal(m)
+			fmt.Println(string(dbug))
+		}
+		break
+	}
+
+	type handlerType func(m *Message)
+	if f, ok := event.(func(*Message)); ok {
+		go handlerType(f)(m)
+	} else if bot.verbose == true {
+		fmt.Println(m.String())
+	}
+}
+
+// OnNewMessage fires on a new message
+func (bot *Bot) OnNewMessage(cb interface{}) {
+	bot.irc.events.onNewMessage = cb
+}
+
+// OnNewWhisper fires on a new whisper
+func (bot *Bot) OnNewWhisper(cb interface{}) {
+	bot.irc.events.onNewWhisper = cb
+}
+
+// OnNewSub fires on a new sub
+func (bot *Bot) OnNewSub(cb interface{}) {
+	bot.irc.events.onNewSub = cb
+}
+
+// OnNewRaid fires on a new raid
+func (bot *Bot) OnNewRaid(cb interface{}) {
+	bot.irc.events.onNewRaid = cb
 }

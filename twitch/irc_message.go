@@ -13,6 +13,7 @@ type Message struct {
 	Params   []string
 	Trailing string
 	Data     struct {
+		// PRIVMSG
 		DisplayName  string
 		UserID       int
 		StreamerID   int
@@ -24,11 +25,30 @@ type Message struct {
 			Admin           bool
 			GlobalModerator bool
 			Subscriber      bool
-			Prime           bool
 		}
 		Timestamp int64
+		Bits      int
 		Message   string
 		Arguments []string
+
+		// USERNOTICE
+		NoticeType    string
+		SystemMessage string
+		Raid          struct {
+			Login       string
+			DisplayName string
+			Viewers     int
+		}
+		GiftSub struct {
+			ID          int
+			Login       string
+			DisplayName string
+		}
+		Sub struct {
+			Plan     string
+			PlanName string
+			Months   int
+		}
 	}
 }
 
@@ -65,6 +85,9 @@ func parseLine(raw string) (*Message, error) {
 			switch spl[0] {
 			case "display-name":
 				m.Data.DisplayName = spl[1]
+				if m.Data.DisplayName == "" {
+					m.Data.DisplayName = m.Nick()
+				}
 			case "user-id":
 				m.Data.UserID, _ = strconv.Atoi(spl[1])
 			case "room-id":
@@ -73,8 +96,6 @@ func parseLine(raw string) (*Message, error) {
 				m.Data.Type.Moderator, _ = strconv.ParseBool(spl[1])
 			case "subscriber":
 				m.Data.Type.Subscriber, _ = strconv.ParseBool(spl[1])
-			case "turbo":
-				m.Data.Type.Prime, _ = strconv.ParseBool(spl[1])
 			case "tmi-sent-ts":
 				m.Data.Timestamp, _ = strconv.ParseInt(spl[1], 10, 64)
 			case "user-type":
@@ -86,6 +107,28 @@ func parseLine(raw string) (*Message, error) {
 				case "global_mod":
 					m.Data.Type.GlobalModerator = true
 				}
+			case "bits":
+				m.Data.Bits, _ = strconv.Atoi(spl[1])
+			case "msg-id":
+				m.Data.NoticeType = spl[1]
+			case "msg-param-displayName":
+				m.Data.Raid.DisplayName = spl[1]
+			case "msg-param-login":
+				m.Data.Raid.Login = spl[1]
+			case "msg-param-viewerCount":
+				m.Data.Raid.Viewers, _ = strconv.Atoi(spl[1])
+			case "msg-param-recipient-id":
+				m.Data.GiftSub.ID, _ = strconv.Atoi(spl[1])
+			case "msg-param-recipient-display-name":
+				m.Data.GiftSub.DisplayName = spl[1]
+			case "msg-param-recipient-user-name":
+				m.Data.GiftSub.Login = spl[1]
+			case "msg-param-sub-plan":
+				m.Data.Sub.Plan = spl[1]
+			case "msg-param-sub-plan-name":
+				m.Data.Sub.PlanName = spl[1]
+			case "msg-param-months":
+				m.Data.Sub.Months, _ = strconv.Atoi(spl[1])
 			}
 		}
 
