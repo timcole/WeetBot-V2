@@ -53,7 +53,7 @@ func (bot *Bot) monitor() {
 			bot.Done <- true
 		}
 
-		bot.callEvent(m)
+		go bot.callEvent(m)
 	}
 }
 
@@ -67,20 +67,19 @@ func (bot *Bot) callEvent(m *Message) {
 		event = bot.irc.events.onNewWhisper
 		break
 	case "USERNOTICE":
-		switch m.Data.NoticeType {
-		case "sub":
-		case "resub":
-		case "subgift":
+		if m.Data.NoticeType == "sub" || m.Data.NoticeType == "resub" || m.Data.NoticeType == "subgift" {
 			event = bot.irc.events.onNewSub
+
 			dbug, _ := json.Marshal(m)
 			fmt.Println(string(dbug))
+
+			js, _ := json.Marshal(m.Data)
+			bot.Say(m.Data.StreamerName, string(js))
 			break
-		case "raid":
+		} else if m.Data.NoticeType == "raid" {
 			event = bot.irc.events.onNewRaid
-			dbug, _ := json.Marshal(m)
-			fmt.Println(string(dbug))
 			break
-		default:
+		} else {
 			dbug, _ := json.Marshal(m)
 			fmt.Println(string(dbug))
 		}
