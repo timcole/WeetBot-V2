@@ -19,7 +19,7 @@ func (bot *Bot) wsConnect() error {
 	// Send pings every 2.5 minutes to keep the connection alive (5 minutes is the required time but 2.5 just to be safe)
 	go func(bot *Bot) {
 		var ticker = time.NewTicker(150 * time.Second)
-		for _ = range ticker.C {
+		for range ticker.C {
 			bot.wsSend(`{ "type": "PING" }`)
 		}
 	}(bot)
@@ -95,7 +95,9 @@ func (*Bot) AddTopicHandler(topic string, q interface{}) {
 }
 
 func (bot *Bot) wsSend(msg string) {
+	bot.wsMutex.Lock()
 	bot.ws.WriteMessage(ws.TextMessage, []byte(msg))
+	bot.wsMutex.Unlock()
 }
 
 // Listen to a new pubsub topic(s)

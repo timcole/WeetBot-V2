@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"net"
 	"strings"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
@@ -16,6 +17,7 @@ type Bot struct {
 
 	verbose bool
 	ws      *websocket.Conn
+	wsMutex sync.Mutex
 	irc     struct {
 		conn   net.Conn
 		rd     *bufio.Reader

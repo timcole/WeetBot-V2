@@ -54,12 +54,12 @@ func (bot *Bot) Say(channel string, message ...string) {
 
 // Join a channel
 func (bot *Bot) Join(channel string) {
-	bot.SendRawIRC("JOIN #" + channel)
+	bot.SendRawIRC("JOIN #" + strings.ToLower(channel))
 }
 
 // Part a channel
 func (bot *Bot) Part(channel string) {
-	bot.SendRawIRC("PART #" + channel)
+	bot.SendRawIRC("PART #" + strings.ToLower(channel))
 }
 
 // Whisper a user

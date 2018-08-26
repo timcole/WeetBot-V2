@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
-	"github.com/TimothyCole/WeetBot-V2/helper"
 	"github.com/TimothyCole/WeetBot-V2/twitch"
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -19,23 +19,24 @@ func main() {
 		panic(err)
 	}
 
-	db, err := helper.InitDB()
-	if err != nil {
-		panic(err)
-	}
+	bot.OnNewMessage(func(msg *twitch.Message) {
+		fmt.Println("> New Message: ", msg.Data.DisplayName, msg.Data.Message)
+	})
+	bot.OnNewWhisper(func(msg *twitch.Message) {
+		fmt.Println("> New Whisper: ", msg.Data.DisplayName, msg.Data.Message)
+	})
+	bot.OnNewSub(func(msg *twitch.Message) {
+		fmt.Println("> New Sub: ", msg.Data.DisplayName, msg.Data.Sub.Plan, msg.Data.GiftSub.Login)
 
-	results, err := db.Query("SELECT id, login, display_name, followers, views, type, `join` FROM users WHERE `join`=1")
-	if err != nil {
-		panic(err)
-	}
+		// dbug, _ := json.Marshal(msg)
+		// bot.Say(msg.Data.StreamerName, string(dbug))
+	})
+	bot.OnNewRaid(func(msg *twitch.Message) {
+		fmt.Println("> New Raid: ", msg.Data.Raid.DisplayName, msg.Data.Raid.Viewers)
+	})
 
-	var users []User
-	for results.Next() {
-		var user User
-		results.Scan(&user.ID, &user.Login, &user.DisplayName, &user.Followers, &user.Views, &user.Type, &user.Join)
-		go joinChannel(bot, user.ID, user.Login)
-		users = append(users, user)
-	}
+	go joinChannel(bot, 51684790, "ModestTim")
+	go joinChannel(bot, 41245072, "LoserFruit")
 
 	<-bot.Done
 }
