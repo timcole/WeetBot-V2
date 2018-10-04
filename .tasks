@@ -8,7 +8,7 @@ WeetBot v2 task list:
 		✔ Respond to PINGs so we don't get disconnected @done (4/29/2018, 7:41:22 AM)
 		✔ Merge Connection into a global struct with PubSub @done (4/29/2018, 8:38:35 AM)
 		MariaDB Logs:
-			☐ Store all messages in MariaDB (MySQL) for logs
+			✘ Store all messages in MariaDB (MySQL) for logs @cancelled (10/4/2018, 3:30:51 PM)
 		...
 	PubSub:
 		✔ Use github.com/gorilla/websocket to connect to wss://pubsub-edge.twitch.tv/ @done (4/22/2018, 11:06:04 PM)
@@ -19,30 +19,6 @@ WeetBot v2 task list:
 		☐ Watch for RECONNECT message to know when to reconnect (typically sent for ws maintenance)
 		✔ Parse JSON from PubSub Messages @done (4/23/2018, 12:02:24 AM)
 		MariaDB Logs:
-			☐ Store moderator actions (chat_moderator_actions.<Bot ID>.<Channel ID>) in MariaDB (MySQL) for logs
-			☐ Listen for new followers (following.<Channel ID>) and store them in MariaDB (MySQL)
-			☐ Listen for video playback (video-playback-by-id.<Channel ID>) updates to store live stream stats in MariaDB (MySQL)
-		...
-	API:
-		Endpoints:
-			☐ *GET* / - Return live stats about the bot
-			☐ *GET* /auth - Is used to login with Twitch
-			☐ **GET** /me - Returns data about the authenticated user
-			Channels:
-				☐ *GET* /channels - Returns the channels the bot is currently in
-				☐ *GET* /channels/id/{username} - Returns the channels id
-				☐ *GET* /channels/{id} - Returns basic channel information
-				☐ *GET* /channels/{id}/chatters - Returns data from tmi's chatter endpoint / Redis cache
-				☐ *GET* /channels/{id}/stats - Returns collected stats
-				Commands:
-					☐ *GET* /channels/{id}/commands - Returns channels commands
-					☐ **POST** /channels/{id}/commands/ - Creates a new command
-					☐ *GET* /channels/{id}/commands/{command} - Returns a specific commands data
-					☐ **PUT** /channels/{id}/commands/{command} - Edits a new command
-					☐ **DELETE** /channels/{id}/commands/{command} - Deletes a command
-				Leaderboard:
-					☐ *GET* /channels/{id}/leaderboard - Returns the all time chatters ordered by points or messages sent
-					☐ **DELETE** /channels/{id}/leaderboard - Resets the channels leaderboard
-					☐ *GET* /channels/{id}/leaderboard/{user} - Returns the users leaderboard information
-					☐ **DELETE** /channels/{id}/leaderboard/{user} - Resets a users leaderboard information
-			...
+			✘ Store moderator actions (chat_moderator_actions.<Bot ID>.<Channel ID>) in MariaDB (MySQL) for logs @cancelled (10/4/2018, 3:25:10 PM)
+			✘ Listen for new followers (following.<Channel ID>) and store them in MariaDB (MySQL) @cancelled (10/4/2018, 3:25:11 PM)
+			✘ Listen for video playback (video-playback-by-id.<Channel ID>) updates to store live stream stats in MariaDB (MySQL) @cancelled (10/4/2018, 3:25:12 PM)
